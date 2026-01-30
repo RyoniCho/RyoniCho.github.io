@@ -24,12 +24,11 @@ function fixRecordMap(recordMap: ExtendedRecordMap): ExtendedRecordMap {
             if (val.format?.page_cover) {
                 const cover = val.format.page_cover
                 if (cover.startsWith('/')) {
-                    // Check if it is a notion relative path or our assets
-                    // Notion relative paths usually don't look like /assets/... but usually /image/...
-                    // But to be safe, if it contains 'assets', we assume it's ours.
-                    // Or simply prefix everything that starts with / and is NOT notion.so
-                    // Just prefixing works for now as long as NotionRenderer handles it.
-                    val.format.page_cover = `${domain}${cover}`
+                    if (cover.startsWith('/image')) {
+                        val.format.page_cover = `https://www.notion.so${cover}`
+                    } else {
+                        val.format.page_cover = `${domain}${cover}`
+                    }
                 }
             }
         })
@@ -50,6 +49,7 @@ export interface Post {
     tags?: string[]
     slug?: string
     cover?: string
+    summary?: string
 }
 
 export async function getPosts(rootPageId: string): Promise<Post[]> {
@@ -68,12 +68,16 @@ export async function getPosts(rootPageId: string): Promise<Post[]> {
     let categoryKey = ''
     let tagsKey = ''
     let dateKey = ''
+    let summaryKey = ''
+    let slugKey = ''
 
     Object.keys(schema).forEach(key => {
-        const name = schema[key].name
-        if (name === '카테고리' || name === 'Category') categoryKey = key
-        if (name === '태그' || name === 'Tags') tagsKey = key
-        if (name === '생성일' || name === 'Date' || name === 'Created') dateKey = key
+        const name = schema[key].name.toLowerCase()
+        if (name === '카테고리' || name === 'category') categoryKey = key
+        if (name === '태그' || name === 'tags') tagsKey = key
+        if (name === '생성일' || name === 'date' || name === 'created') dateKey = key
+        if (name === '요약' || name === 'summary' || name === 'description') summaryKey = key
+        if (name === 'slug' || name === 'url') slugKey = key
     })
 
     Object.values(block).forEach((blockItem) => {
@@ -104,17 +108,30 @@ export async function getPosts(rootPageId: string): Promise<Post[]> {
             const rawTags = props[tagsKey] || []
             const tags = rawTags.map((t: any) => t[0]) // Simplistic extraction
 
+            // Summary
+            const summary = summaryKey && props[summaryKey] ? getTextContent(props[summaryKey]) : ''
+
+            // Slug
+            const slug = slugKey && props[slugKey] ? getTextContent(props[slugKey]) : ''
+
             // Cover
             let cover = ''
             if (val.format?.page_cover) {
                 const coverUrl = val.format.page_cover
-                // fixRecordMap already prefixed absolute URLs for local assets
-                // If it's a Notion hosted image, it might start with /image/...
-                if (coverUrl.startsWith('http')) {
-                    cover = coverUrl
-                } else if (coverUrl.startsWith('/')) {
-                    // If fixRecordMap didn't catch it for some reason or logic overlap
-                    cover = 'https://www.notion.so' + coverUrl
+
+                if (coverUrl.startsWith('/')) {
+                    // It's a Notion relative URL, needs to be proxied
+                    // Format: https://www.notion.so/image/{encoded_url}?table=block&id={block_id}
+                    const fullUrl = `https://www.notion.so${coverUrl}`
+                    cover = `https://www.notion.so/image/${encodeURIComponent(fullUrl)}?table=block&id=${val.id}&cache=v2`
+                } else if (coverUrl.startsWith('http')) {
+                    // External URL or already absolute
+                    // Even external images often need proxying if they are S3 signed urls that expire,
+                    // but static external images (unsure) might work. 
+                    // Safest for Notion user content is to proxy if it looks like an S3 url, 
+                    // but for user provided links let's keep as is unless broken.
+                    // Actually, standard Notion practice is to proxy everything to handle resizing/caching.
+                    cover = `https://www.notion.so/image/${encodeURIComponent(coverUrl)}?table=block&id=${val.id}&cache=v2`
                 } else {
                     cover = coverUrl
                 }
@@ -126,7 +143,9 @@ export async function getPosts(rootPageId: string): Promise<Post[]> {
                 date,
                 category,
                 tags,
-                cover
+                cover,
+                summary,
+                slug
             })
         }
     })

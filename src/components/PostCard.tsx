@@ -1,57 +1,54 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import { Post } from '@/lib/notion'
 
 const PostCard = ({ post }: { post: Post }) => {
-    const date = new Date(post.date).toLocaleDateString('ko-KR', {
+    const date = new Date(post.date).toLocaleDateString('en-US', {
         year: 'numeric',
-        month: 'long',
+        month: 'short',
         day: 'numeric'
     })
 
     return (
-        <Link href={`/blog/${post.id}`} className="group relative block h-full">
-            <div className="relative h-full overflow-hidden rounded-2xl bg-white/5 border border-white/10 transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:shadow-2xl hover:shadow-purple-500/10 dark:bg-zinc-900/50">
+        <Link href={`/blog/${post.id}`} className="group block focus:outline-none">
+            <div className="curiosity-card relative h-full bg-white dark:bg-card-dark rounded-xl overflow-hidden border border-slate-200 dark:border-accent-gray/50 transition-all duration-300 p-6 hover:shadow-xl hover:-translate-y-1">
 
-                {/* Image / Gradient Placeholder */}
-                <div className="relative aspect-[16/9] w-full overflow-hidden bg-gradient-to-br from-purple-500/20 to-blue-500/20">
-                    {post.cover ? (
-                        <img
-                            src={post.cover}
-                            alt={post.title}
-                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        />
-                    ) : (
-                        <div className="absolute inset-0 flex items-center justify-center text-4xl opacity-20">
-                            ✍️
-                        </div>
-                    )}
-                    <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/10" />
-                </div>
-
-                {/* Content */}
-                <div className="p-5">
-                    <div className="mb-3 flex flex-wrap gap-2">
-                        {post.category && (
-                            <span className="inline-flex items-center rounded-full bg-blue-500/10 px-2.5 py-0.5 text-xs font-medium text-blue-500 ring-1 ring-inset ring-blue-500/20">
-                                {post.category}
-                            </span>
-                        )}
-                        {post.tags?.slice(0, 2).map(tag => (
-                            <span key={tag} className="inline-flex items-center rounded-full bg-purple-500/10 px-2.5 py-0.5 text-xs font-medium text-purple-400 ring-1 ring-inset ring-purple-500/20">
-                                #{tag}
-                            </span>
-                        ))}
-                    </div>
-
-                    <h2 className="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white transition-colors group-hover:text-blue-400">
+                {/* Header: Title & Date */}
+                <div className="flex justify-between items-start mb-4">
+                    <h3 className="text-slate-900 dark:text-white text-xl font-bold leading-tight group-hover:text-primary transition-colors line-clamp-2">
                         {post.title}
-                    </h2>
+                    </h3>
+                    <span className="text-slate-400 font-mono text-xs whitespace-nowrap pt-1 ml-4 shrink-0">
+                        {date}
+                    </span>
+                </div>
 
-                    <div className="flex items-center gap-x-2 text-xs text-gray-500 dark:text-gray-400">
-                        <time dateTime={post.date}>{date}</time>
+                {/* Reveal Content (Description + Tags) */}
+                <div className="reveal-content">
+                    <p className="text-slate-600 dark:text-[#92a4c9] mb-4 text-sm line-clamp-3">
+                        {post.summary || post.slug || "Click to read more about this topic..."}
+                    </p>
+
+                    <div className="flex items-center gap-4 mt-auto">
+                        <div className="flex flex-wrap gap-2">
+                            {post.category && (
+                                <span className="flex items-center gap-1 text-[10px] font-mono text-slate-500 bg-slate-100 dark:bg-accent-gray/50 px-2 py-0.5 rounded border border-slate-200 dark:border-transparent">
+                                    #{post.category}
+                                </span>
+                            )}
+                            {post.tags?.slice(0, 1).map(tag => (
+                                <span key={tag} className="flex items-center gap-1 text-[10px] font-mono text-slate-500 bg-slate-100 dark:bg-accent-gray/50 px-2 py-0.5 rounded border border-slate-200 dark:border-transparent">
+                                    #{tag}
+                                </span>
+                            ))}
+                        </div>
+
+                        <div className="ml-auto flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity">
+                            Read <span className="text-lg">→</span>
+                        </div>
                     </div>
                 </div>
+
+                {/* Hover Border Effect using CSS in globals */}
             </div>
         </Link>
     )
