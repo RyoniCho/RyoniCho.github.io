@@ -35,8 +35,8 @@ export default function PostList({ initialPosts }: PostListProps) {
                             key={cat}
                             onClick={() => setSelectedCategory(cat)}
                             className={`px-3 py-1.5 text-sm font-medium rounded-full transition-colors ${selectedCategory === cat
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-zinc-800 dark:text-zinc-400'
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-zinc-800 dark:text-zinc-400'
                                 }`}
                         >
                             {cat}
@@ -49,8 +49,8 @@ export default function PostList({ initialPosts }: PostListProps) {
                     <button
                         onClick={() => setViewMode('grid')}
                         className={`p-1.5 rounded-md transition-all ${viewMode === 'grid'
-                                ? 'bg-white dark:bg-black shadow text-blue-500'
-                                : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
+                            ? 'bg-white dark:bg-black shadow text-blue-500'
+                            : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
                             }`}
                         title="Grid View"
                     >
@@ -61,8 +61,8 @@ export default function PostList({ initialPosts }: PostListProps) {
                     <button
                         onClick={() => setViewMode('list')}
                         className={`p-1.5 rounded-md transition-all ${viewMode === 'list'
-                                ? 'bg-white dark:bg-black shadow text-blue-500'
-                                : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
+                            ? 'bg-white dark:bg-black shadow text-blue-500'
+                            : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
                             }`}
                         title="List View"
                     >
@@ -75,7 +75,7 @@ export default function PostList({ initialPosts }: PostListProps) {
 
             {/* Grid View */}
             {viewMode === 'grid' && (
-                <div className="grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-2">
                     {filteredPosts.map((post) => (
                         <PostCard key={post.id} post={post} />
                     ))}

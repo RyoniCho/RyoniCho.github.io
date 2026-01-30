@@ -6,25 +6,6 @@ export default function Footer() {
     return (
         <footer className="bg-slate-100 dark:bg-card-dark border-t border-slate-200 dark:border-accent-gray mt-24 py-16 px-6 transition-colors">
             <div className="max-w-7xl mx-auto flex flex-col items-center text-center">
-                <h4 className="text-slate-900 dark:text-white text-2xl font-bold mb-2 font-display">
-                    Join the inner circle
-                </h4>
-                <p className="text-slate-600 dark:text-[#92a4c9] mb-8 max-w-md">
-                    Weekly deep dives into systems engineering and digital craft delivered straight to your inbox.
-                </p>
-
-                {/* Newsletter Form (Visual) */}
-                <form className="flex w-full max-w-md gap-2" onSubmit={(e) => e.preventDefault()}>
-                    <input
-                        className="flex-1 bg-white dark:bg-background-dark border border-slate-200 dark:border-none rounded-lg focus:ring-2 focus:ring-primary text-slate-800 dark:text-white px-4 py-3 placeholder:text-slate-500 outline-none transition-all"
-                        placeholder="email@example.com"
-                        type="email"
-                    />
-                    <button className="bg-primary text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/20">
-                        Subscribe
-                    </button>
-                </form>
-
                 <div className="mt-12 pt-8 border-t border-slate-200 dark:border-accent-gray/50 w-full flex flex-col md:flex-row justify-between items-center gap-6">
                     <div className="flex items-center gap-2 font-mono text-[10px] text-slate-500 uppercase tracking-widest">
                         <span>© {new Date().getFullYear()} RYONI.BLOG • BUILT WITH INTENT</span>

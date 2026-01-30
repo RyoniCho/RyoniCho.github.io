@@ -1,6 +1,7 @@
 import { getPosts, getPage } from '@/lib/notion'
 import { rootNotionPageId } from '@/config'
 import PostList from '@/components/PostList'
+import AdSense from '@/components/AdSense'
 import Link from 'next/link'
 import { getTextContent } from 'notion-utils'
 
@@ -32,6 +33,13 @@ export default async function Home() {
               featuredPost.cover = `https://www.notion.so/image/${encodeURIComponent(fullUrl)}?table=block&id=${imageBlock.value.id}&cache=v2`
             }
           }
+        }
+
+
+        // 1-2. Final Fallback Cover: Default Image
+        if (!featuredPost.cover) {
+          // Using a nice clean default image (Unsplash source)
+          featuredPost.cover = 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?auto=format&fit=crop&w=1200&q=80'
         }
 
         // 2. Fallback Summary: Find first paragraph text
@@ -133,9 +141,13 @@ export default async function Home() {
               <span className="text-xs text-slate-500">ℹ</span>
             </div>
             <div className="min-h-[300px] flex items-center justify-center p-6 text-center bg-slate-50 dark:bg-[#0f1115]">
-              {/* Google AdSense or Placeholder */}
-              <div className="text-slate-400 text-xs">
-                Ad Space
+              {/* Vertical Sidebar Ad */}
+              <div className="w-full">
+                <AdSense
+                  pId="ca-pub-8494787667488340"
+                  slotId="2610035515"
+                  style={{ display: 'block', minHeight: '300px' }}
+                />
               </div>
             </div>
           </div>

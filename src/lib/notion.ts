@@ -68,6 +68,7 @@ export async function getPosts(rootPageId: string): Promise<Post[]> {
     let categoryKey = ''
     let tagsKey = ''
     let dateKey = ''
+    let originalDateKey = ''
     let summaryKey = ''
     let slugKey = ''
 
@@ -76,6 +77,7 @@ export async function getPosts(rootPageId: string): Promise<Post[]> {
         if (name === '카테고리' || name === 'category') categoryKey = key
         if (name === '태그' || name === 'tags') tagsKey = key
         if (name === '생성일' || name === 'date' || name === 'created') dateKey = key
+        if (name === 'original creation date' || name === '최초생성일') originalDateKey = key
         if (name === '요약' || name === 'summary' || name === 'description') summaryKey = key
         if (name === 'slug' || name === 'url') slugKey = key
     })
@@ -96,7 +98,14 @@ export async function getPosts(rootPageId: string): Promise<Post[]> {
 
             // Date handling
             let date = new Date(val.created_time).toISOString()
-            if (dateKey && props[dateKey]) {
+
+            // 1. Try Original Creation Date first
+            if (originalDateKey && props[originalDateKey]) {
+                const dateVal = getDateValue(props[originalDateKey])
+                if (dateVal) date = new Date(dateVal.start_date).toISOString()
+            }
+            // 2. Fallback to standard Date property
+            else if (dateKey && props[dateKey]) {
                 const dateVal = getDateValue(props[dateKey])
                 if (dateVal) date = new Date(dateVal.start_date).toISOString()
             }
