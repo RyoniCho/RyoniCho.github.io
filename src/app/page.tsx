@@ -1,6 +1,6 @@
 import { getPosts } from '@/lib/notion'
 import { rootNotionPageId } from '@/config'
-import PostCard from '@/components/PostCard'
+import PostList from '@/components/PostList'
 
 export default async function Home() {
   const posts = await getPosts(rootNotionPageId)
@@ -20,20 +20,9 @@ export default async function Home() {
         </div>
       </div>
 
-      {/* Grid Section */}
-      <div className="mx-auto max-w-7xl px-6 lg:px-8 pb-24">
-        <div className="grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-          {posts.map((post) => (
-            <PostCard key={post.id} post={post} />
-          ))}
-        </div>
+      {/* Content Section */}
+      <PostList initialPosts={posts} />
 
-        {posts.length === 0 && (
-          <div className="text-center py-20 text-gray-500">
-            No posts found. Please verify the connection.
-          </div>
-        )}
-      </div>
     </main>
   );
 }

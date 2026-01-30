@@ -45,9 +45,18 @@ export const NotionPage = ({
             rootPageId={rootPageId}
             mapImageUrl={(url, block) => {
                 if (!url) return ''
+
+                // 1. Handle Notion Signed URLs (uploaded/imported images)
+                if (url.startsWith('attachment')) {
+                    const signedUrl = recordMap.signed_urls?.[block.id]
+                    if (signedUrl) return signedUrl
+                }
+
+                // 2. Handle Local Assets (relative paths)
                 if (url.startsWith('/')) {
                     return `https://ryonicho.github.io${url}`
                 }
+
                 return url
             }}
             components={{
