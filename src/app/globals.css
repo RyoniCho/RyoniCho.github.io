@@ -24,3 +24,31 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Fix for Notion Icons becoming huge due to Tailwind Preflight */
+.notion-page-icon {
+  display: inline-block;
+  width: 1.5rem;
+  height: 1.5rem;
+  max-width: 100%;
+}
+
+.notion-property-icon {
+  display: inline-block;
+  width: 1.1rem;
+  height: 1.1rem;
+  flex-shrink: 0;
+  margin-right: 0.4rem;
+}
+
+.notion-icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
+}
+
+/* Fix for Images inside Notion (reset Tailwind's aggression) */
+.notion img {
+  display: initial;
+}
