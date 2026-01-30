@@ -5,6 +5,8 @@ import AdSense from '@/components/AdSense'
 import Link from 'next/link'
 import { getTextContent } from 'notion-utils'
 
+export const revalidate = 0 // Disable cache for this page
+
 export default async function Home() {
   const posts = await getPosts(rootNotionPageId)
 

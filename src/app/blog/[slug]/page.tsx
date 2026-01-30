@@ -2,6 +2,8 @@ import { getPage, getPosts } from '@/lib/notion'
 import { rootNotionPageId } from '@/config'
 import { NotionPage } from '@/components/NotionPage'
 
+export const revalidate = 0 // Disable cache for this page
+
 export async function generateStaticParams() {
     const posts = await getPosts(rootNotionPageId)
     return posts.map((post) => ({
