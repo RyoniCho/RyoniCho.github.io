@@ -22,7 +22,7 @@ export default async function Home() {
 
         // 1. Fallback Cover: Find first image in content
         if (!featuredPost.cover) {
-          const imageBlock = blocks.find(b => b?.value?.type === 'image')
+          const imageBlock = blocks.find((b: any) => b?.value?.type === 'image')
           if (imageBlock) {
             const src = imageBlock.value.properties?.source?.[0]?.[0]
             if (src) {
@@ -35,7 +35,6 @@ export default async function Home() {
           }
         }
 
-
         // 1-2. Final Fallback Cover: Default Image
         if (!featuredPost.cover) {
           // Using a nice clean default image (Unsplash source)
@@ -44,7 +43,7 @@ export default async function Home() {
 
         // 2. Fallback Summary: Find first paragraph text
         if (!featuredPost.summary) {
-          const textBlock = blocks.find(b =>
+          const textBlock = blocks.find((b: any) =>
             b?.value?.type === 'text' &&
             b.value.properties?.title &&
             b.value.id !== featuredPost.id // Not the page itself
