@@ -25,30 +25,60 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Fix for Notion Icons becoming huge due to Tailwind Preflight */
-.notion-page-icon {
-  display: inline-block;
-  width: 1.5rem;
-  height: 1.5rem;
-  max-width: 100%;
-}
+/* 
+  FIX: Tailwind Preflight makes all SVGs/Images width: 100% display: block. 
+  This breaks react-notion-x icons.
+  Using !important to ensure these override any other defaults.
+*/
 
+/* Property Icons (Date, Category, etc.) */
 .notion-property-icon {
-  display: inline-block;
-  width: 1.1rem;
-  height: 1.1rem;
-  flex-shrink: 0;
-  margin-right: 0.4rem;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem !important;
+  /* 20px */
+  height: 1.25rem !important;
+  margin-right: 0.5rem !important;
+  font-size: 1.25rem !important;
+  overflow: hidden;
 }
 
+.notion-property-icon svg,
+.notion-property-icon img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Page Icon (Title icon) */
+.notion-page-icon {
+  display: inline-flex !important;
+  width: 1.5rem !important;
+  height: 1.5rem !important;
+  max-width: 100% !important;
+  margin-right: 0.5rem;
+}
+
+/* Specific Fix for Collection/Table Property Icons found by User */
+.notion-collection-column-title-icon {
+  display: inline-block !important;
+  width: 1.2rem !important;
+  /* Slightly smaller than main title icon */
+  height: 1.2rem !important;
+  fill: currentColor;
+  flex-shrink: 0;
+}
+
+/* General Notion Icons */
 .notion-icon {
-  display: inline-block;
-  width: 1em;
-  height: 1em;
+  display: inline-block !important;
+  width: 1em !important;
+  height: 1em !important;
   fill: currentColor;
 }
 
-/* Fix for Images inside Notion (reset Tailwind's aggression) */
-.notion img {
+/* Prevent Notion images from being forced to 100% width unless specified */
+.notion-asset-wrapper img {
   display: initial;
 }

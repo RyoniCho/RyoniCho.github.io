@@ -1,5 +1,10 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+// core styles for react-notion-x
+import 'react-notion-x/src/styles.css'
+import 'prismjs/themes/prism-tomorrow.css'
+import 'katex/dist/katex.min.css'
+
 import './globals.css'
 import { Header } from '@/components/Header'
 import Footer from '@/components/Footer'
