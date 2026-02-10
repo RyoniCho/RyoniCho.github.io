@@ -55,10 +55,38 @@ export interface Post {
 export async function getPosts(rootPageId: string): Promise<Post[]> {
     const recordMap = await getPage(rootPageId) // Helper already calls fixRecordMap
     const block = recordMap.block
-    const collection = Object.values(recordMap.collection)[0]?.value
+
+    console.log(`Debug: recordMap for ${rootPageId}`)
+    console.log(`Debug: Block keys: ${Object.keys(block).length}`)
+
+    // Robust unwrapping: Drill down into collection.value until we find the actual data
+    let collection = Object.values(recordMap.collection || {})[0]?.value as any
+
+    let depth = 0
+    while (collection?.value && depth < 3) {
+        if (collection.schema) break;
+        console.log(`Debug: Unwrapping collection at depth ${depth}`)
+        collection = collection.value
+        depth++
+    }
+
+    if (collection) {
+        console.log(`Debug: Collection found. ID: ${collection.id}`)
+        console.log(`Debug: Collection keys: ${Object.keys(collection).join(', ')}`)
+    } else {
+        console.log("Debug: Collection value is undefined")
+    }
+
     const schema = collection?.schema
 
-    if (!collection || !schema) return []
+    if (!collection) {
+        console.log("Debug: No collection found in recordMap")
+        return []
+    }
+    if (!schema) {
+        console.log("Debug: No schema found in collection")
+        return []
+    }
 
     const posts: Post[] = []
 
@@ -82,14 +110,24 @@ export async function getPosts(rootPageId: string): Promise<Post[]> {
         if (name === 'slug' || name === 'url') slugKey = key
     })
 
+    console.log(`Debug: Checking ${Object.values(block).length} blocks against collectionId ${collectionId}`)
+
     Object.values(block).forEach((blockItem) => {
         if (!blockItem?.value) return
-        const val = blockItem.value
+        let val = blockItem.value as any
+
+        // Check for double-wrapping (common in some Notion API responses)
+        if (val.value) {
+            val = val.value
+        }
+
+        if (val.parent_id === collectionId) {
+            // console.log(`Debug: Found matching parent for block ${val.id}`)
+        }
 
         if (
             val.type === 'page' &&
-            val.parent_id === collectionId &&
-            val.content
+            val.parent_id === collectionId
         ) {
             const props: any = val.properties || {}
 
@@ -129,17 +167,9 @@ export async function getPosts(rootPageId: string): Promise<Post[]> {
                 const coverUrl = val.format.page_cover
 
                 if (coverUrl.startsWith('/')) {
-                    // It's a Notion relative URL, needs to be proxied
-                    // Format: https://www.notion.so/image/{encoded_url}?table=block&id={block_id}
                     const fullUrl = `https://www.notion.so${coverUrl}`
                     cover = `https://www.notion.so/image/${encodeURIComponent(fullUrl)}?table=block&id=${val.id}&cache=v2`
                 } else if (coverUrl.startsWith('http')) {
-                    // External URL or already absolute
-                    // Even external images often need proxying if they are S3 signed urls that expire,
-                    // but static external images (unsure) might work. 
-                    // Safest for Notion user content is to proxy if it looks like an S3 url, 
-                    // but for user provided links let's keep as is unless broken.
-                    // Actually, standard Notion practice is to proxy everything to handle resizing/caching.
                     cover = `https://www.notion.so/image/${encodeURIComponent(coverUrl)}?table=block&id=${val.id}&cache=v2`
                 } else {
                     cover = coverUrl

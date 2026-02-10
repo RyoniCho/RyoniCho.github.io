@@ -3,12 +3,17 @@ import { rootNotionPageId } from '@/config'
 import { NotionPage } from '@/components/NotionPage'
 
 export async function generateStaticParams() {
-    const posts = await getPosts(rootNotionPageId)
-    return posts.map((post) => ({
-        slug: post.id,
-    }))
-    // console.log("Generating static params...")
-    // return [{ slug: 'test-slug' }]
+    console.log("generateStaticParams: Starting...")
+    try {
+        const posts = await getPosts(rootNotionPageId)
+        console.log("generateStaticParams: Posts fetched", posts.length)
+        return posts.map((post) => ({
+            slug: post.id,
+        }))
+    } catch (error) {
+        console.error("generateStaticParams: Error fetching posts", error)
+        return []
+    }
 }
 
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
