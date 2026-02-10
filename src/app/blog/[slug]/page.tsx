@@ -7,6 +7,8 @@ export async function generateStaticParams() {
     return posts.map((post) => ({
         slug: post.id,
     }))
+    // console.log("Generating static params...")
+    // return [{ slug: 'test-slug' }]
 }
 
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
