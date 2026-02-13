@@ -46,10 +46,15 @@ export const NotionPage = ({
             mapImageUrl={(url, block) => {
                 if (!url) return ''
 
-                // 1. Handle Notion Signed URLs (uploaded/imported images)
-                if (url.startsWith('attachment')) {
-                    const signedUrl = recordMap.signed_urls?.[block.id]
-                    if (signedUrl) return signedUrl
+                // 1. Handle Notion Signed URLs (uploaded/imported images) & S3 URLs
+                // If it starts with 'attachment' (Notion internal) or 'https://file.notion.so' (S3),
+                // or even just standard S3 links, we should proxy them through Notion to get a fresh link via the public page.
+                if (url.startsWith('attachment') || url.includes('file.notion.so') || url.includes('s3.us-west-2.amazonaws.com')) {
+                    // Start with the raw URL (which might be the expired one, but that's fine as the ID reference)
+                    const sourceUrl = recordMap.signed_urls?.[block.id] || url
+
+                    // Proxy URL format: https://www.notion.so/image/{ENCODED_URL}?table=block&id={BLOCK_ID}&cache=v2
+                    return `https://www.notion.so/image/${encodeURIComponent(sourceUrl)}?table=block&id=${block.id}&cache=v2`
                 }
 
                 // 2. Handle Local Assets (relative paths)
