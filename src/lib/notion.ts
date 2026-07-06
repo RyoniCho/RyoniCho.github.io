@@ -4,6 +4,32 @@ import { getDateValue, getTextContent } from 'notion-utils'
 
 const notion = new NotionAPI()
 
+function unwrapNotionRecord<T extends { value?: any }>(record: T): T {
+    if (record?.value?.value) {
+        return {
+            ...record.value,
+            spaceId: (record as any).spaceId ?? record.value.spaceId,
+        }
+    }
+
+    return record
+}
+
+function normalizeRecordMap(recordMap: ExtendedRecordMap): ExtendedRecordMap {
+    const mapKeys = ['block', 'collection', 'collection_view', 'notion_user'] as const
+
+    mapKeys.forEach((mapKey) => {
+        const map = (recordMap as any)[mapKey]
+        if (!map) return
+
+        Object.keys(map).forEach((key) => {
+            map[key] = unwrapNotionRecord(map[key])
+        })
+    })
+
+    return recordMap
+}
+
 function fixRecordMap(recordMap: ExtendedRecordMap): ExtendedRecordMap {
     const domain = 'https://ryonicho.github.io'
 
@@ -38,7 +64,7 @@ function fixRecordMap(recordMap: ExtendedRecordMap): ExtendedRecordMap {
 
 export async function getPage(pageId: string): Promise<ExtendedRecordMap> {
     const recordMap = await notion.getPage(pageId)
-    return fixRecordMap(recordMap)
+    return fixRecordMap(normalizeRecordMap(recordMap))
 }
 
 export interface Post {
@@ -53,8 +79,8 @@ export interface Post {
 }
 
 export async function getPosts(rootPageId: string): Promise<Post[]> {
-    const recordMap = await getPage(rootPageId) // Helper already calls fixRecordMap
-    const block = recordMap.block
+    const recordMap = await getPage(rootPageId) // Helper already normalizes and fixes recordMap
+    let block = recordMap.block
 
     console.log(`Debug: recordMap for ${rootPageId}`)
     console.log(`Debug: Block keys: ${Object.keys(block).length}`)
@@ -90,7 +116,72 @@ export async function getPosts(rootPageId: string): Promise<Post[]> {
 
     const posts: Post[] = []
 
-    const collectionId = collection.id
+    const rootCollectionBlock = Object.values(block)
+        .map((blockItem) => blockItem?.value as any)
+        .find((val) => val?.type === 'collection_view' && val.collection_id)
+
+    const collectionId = collection.id || rootCollectionBlock?.collection_id
+    const collectionViewId = rootCollectionBlock?.view_ids?.[0]
+    const collectionView = collectionViewId ? recordMap.collection_view?.[collectionViewId]?.value : undefined
+
+    if (collectionId && collectionViewId) {
+        try {
+            const collectionData = await notion.getCollectionData(
+                collectionId,
+                collectionViewId,
+                collectionView,
+                {
+                    limit: 999,
+                    spaceId: rootCollectionBlock?.space_id,
+                }
+            )
+
+            const collectionBlockIds = Array.from(
+                new Set<string>(((collectionData as any).allBlockIds || []).filter(Boolean))
+            )
+            const hydratedBlocks = collectionBlockIds.length
+                ? await notion.getBlocks(collectionBlockIds)
+                : undefined
+
+            const collectionRecordMap = normalizeRecordMap(collectionData.recordMap as ExtendedRecordMap)
+            const hydratedRecordMap = hydratedBlocks
+                ? normalizeRecordMap(hydratedBlocks.recordMap as ExtendedRecordMap)
+                : undefined
+
+            recordMap.block = {
+                ...recordMap.block,
+                ...collectionRecordMap.block,
+                ...hydratedRecordMap?.block,
+            }
+            recordMap.collection = {
+                ...recordMap.collection,
+                ...collectionRecordMap.collection,
+                ...hydratedRecordMap?.collection,
+            }
+            recordMap.collection_view = {
+                ...recordMap.collection_view,
+                ...collectionRecordMap.collection_view,
+                ...hydratedRecordMap?.collection_view,
+            }
+            recordMap.notion_user = {
+                ...recordMap.notion_user,
+                ...collectionRecordMap.notion_user,
+                ...hydratedRecordMap?.notion_user,
+            }
+            recordMap.collection_query = {
+                ...recordMap.collection_query,
+                [collectionId]: {
+                    ...recordMap.collection_query?.[collectionId],
+                    [collectionViewId]: collectionData.result?.reducerResults,
+                },
+            }
+
+            fixRecordMap(recordMap)
+            block = recordMap.block
+        } catch (error) {
+            console.error("Debug: Failed to query Notion collection", error)
+        }
+    }
 
     // Map schema keys to readable names
     let categoryKey = ''
